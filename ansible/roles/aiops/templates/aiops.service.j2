@@ -1,0 +1,14 @@
+[Unit]
+Description=AIOps Metrics Exporter
+After=network.target
+
+[Service]
+Type=simple
+User=ec2-user
+WorkingDirectory=/opt/monitoring/aiops
+ExecStart=/usr/bin/python3 /opt/monitoring/aiops/metrics_exporter.py
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

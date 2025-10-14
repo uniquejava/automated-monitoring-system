@@ -1,0 +1,27 @@
+---
+- name: Add Grafana repo and install
+  ansible.builtin.shell: |
+    if ! command -v grafana-server >/dev/null; then
+      sudo yum install -y yum-utils
+      sudo yum-config-manager --add-repo https://packages.grafana.com/oss/rpm
+      sudo rpm --import https://packages.grafana.com/gpg.key
+      sudo yum install -y grafana
+    fi
+
+- name: Configure grafana.ini
+  ansible.builtin.template:
+    src: grafana.ini.j2
+    dest: /etc/grafana/grafana.ini
+    mode: '0644'
+
+- name: Configure Prometheus datasource
+  ansible.builtin.template:
+    src: datasource.yml.j2
+    dest: /etc/grafana/provisioning/datasources/datasource.yml
+    mode: '0644'
+
+- name: Enable and start Grafana
+  ansible.builtin.systemd:
+    name: grafana-server
+    enabled: yes
+    state: started

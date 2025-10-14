@@ -1,0 +1,10 @@
+---
+- name: Setup monitoring environment
+  hosts: monitoring_servers
+  become: yes
+  roles:
+    - role: common
+    - role: prometheus
+    - role: node_exporter
+    - role: grafana
+    - role: aiops

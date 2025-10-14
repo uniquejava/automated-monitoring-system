@@ -1,0 +1,50 @@
+---
+- name: Create AIOps directory
+  ansible.builtin.file:
+    path: /opt/monitoring/aiops
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: Copy AIOps scripts
+  ansible.builtin.copy:
+    src: "{{ item }}"
+    dest: "/opt/monitoring/aiops/{{ item }}"
+    mode: '0755'
+  loop:
+    - anomaly_detector.py
+    - metrics_exporter.py
+
+- name: Install Python dependencies
+  ansible.builtin.pip:
+    name:
+      - requests
+      - numpy
+      - pandas
+      - scikit-learn
+      - psutil
+
+- name: Ensure cron.d directory exists
+  ansible.builtin.file:
+    path: /etc/cron.d
+    state: directory
+    mode: '0755'
+
+- name: Configure AIOps cron job
+  ansible.builtin.template:
+    src: aiops-cronjob.j2
+    dest: /etc/cron.d/aiops-anomaly
+    mode: '0644'
+
+- name: Install metrics exporter systemd service
+  ansible.builtin.template:
+    src: aiops.service.j2
+    dest: /etc/systemd/system/aiops-exporter.service
+    mode: '0644'
+
+- name: Enable and start metrics exporter
+  ansible.builtin.systemd:
+    name: aiops-exporter
+    enabled: yes
+    state: started

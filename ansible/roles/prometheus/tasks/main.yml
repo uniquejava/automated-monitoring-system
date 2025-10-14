@@ -1,0 +1,48 @@
+---
+- name: Create Prometheus directory
+  ansible.builtin.file:
+    path: "{{ prometheus_dir }}"
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: Download Prometheus binary
+  ansible.builtin.get_url:
+    url: "https://github.com/prometheus/prometheus/releases/download/v{{ prometheus_version }}/prometheus-{{ prometheus_version }}.linux-amd64.tar.gz"
+    dest: /tmp/prometheus.tar.gz
+
+- name: Extract Prometheus
+  ansible.builtin.unarchive:
+    src: /tmp/prometheus.tar.gz
+    dest: "{{ prometheus_dir }}"
+    remote_src: yes
+
+- name: Configure prometheus.yml
+  ansible.builtin.template:
+    src: prometheus.yml.j2
+    dest: "{{ prometheus_dir }}/prometheus.yml"
+    mode: '0644'
+
+- name: Create systemd service
+  ansible.builtin.copy:
+    dest: /etc/systemd/system/prometheus.service
+    content: |
+      [Unit]
+      Description=Prometheus
+      After=network.target
+
+      [Service]
+      ExecStart={{ prometheus_dir }}/prometheus-{{ prometheus_version }}.linux-amd64/prometheus \
+        --config.file={{ prometheus_dir }}/prometheus.yml \
+        --storage.tsdb.path={{ prometheus_dir }}/data
+      Restart=always
+
+      [Install]
+      WantedBy=multi-user.target
+
+- name: Start Prometheus service
+  ansible.builtin.systemd:
+    name: prometheus
+    enabled: yes
+    state: started
