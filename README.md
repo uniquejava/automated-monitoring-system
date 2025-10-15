@@ -4,6 +4,8 @@ A comprehensive DevOps and Platform Engineering project implementing a complete 
 
 [简体中文](README.zh-CN.md) | English
 
+![screenshot](./docs/aiops.jpg)
+
 ## 🎯 Project Overview
 
 This project builds an automated monitoring system on AWS EC2, integrating Prometheus, Grafana, and AIOps anomaly detection capabilities:
